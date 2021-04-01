@@ -1,0 +1,5 @@
+exec: etcd
+test: bash -c "netstat -nplt | grep -v grep | grep 2379"
+log: stdout
+after:
+  - init

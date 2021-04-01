@@ -1,0 +1,4 @@
+exec: sh -c "/bin/bash /entrypoint.sh"
+oneshot: true
+log: stdout
+
