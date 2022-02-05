@@ -143,4 +143,6 @@ su discourse -c 'RAILS_ENV=production  bundle exec rake  db:migrate ;bundle exec
 # stop postgres to start it using supervisord
 /etc/init.d/postgresql stop
 /usr/bin/redis-cli shutdown
-supervisord -n -c /etc/supervisor/supervisord.conf
+supervisord -n -c /etc/supervisor/supervisord.conf 
+
+#cd /var/www/discourse && su discourse -c ' RAILS_ENV=production bundle exec rails c'

@@ -139,34 +139,38 @@ ADD cron.d_anacron /etc/cron.d/anacron
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install net-tools iputils-ping -y \
     && apt install -y libsodium-dev python-pip python3-pip tmux openssh-server
-
+RUN apt install -y libffi-dev
 RUN pip3 install uwsgi flask pynacl requests flask_sessionstore
 RUN pip3 install Werkzeug==0.16.0
 RUN pip3 install uwsgi flask pynacl requests flask_sessionstore
 RUN pip3 install Werkzeug==0.16.0
 
 # Discourse specific bits
-RUN useradd discourse -s /bin/bash -m -U &&\
-    mkdir -p /var/www &&\
-    cd /var/www &&\
-    git clone https://github.com/threefoldtech/threefold-forums -b $FORUM_VERSION discourse &&\
-    cd discourse &&\
-    git remote set-branches --add origin tests-passed &&\
-    chown -R discourse:discourse /var/www/discourse &&\
-    cd /var/www/discourse &&\
-    sudo -u discourse bundle install --deployment --jobs 4 --without test development &&\
-    bundle exec rake maxminddb:get &&\
+ RUN useradd discourse -s /bin/bash -m -U &&\
+     mkdir -p /var/www &&\
+     cd /var/www &&\
+     git clone https://github.com/threefoldtech/threefold-forums -b $FORUM_VERSION discourse &&\
+     cd discourse &&\
+     git remote set-branches --add origin tests-passed &&\
+     chown -R discourse:discourse /var/www/discourse &&\
+     cd /var/www/discourse 
+USER discourse
+
+RUN cd /var/www/discourse  && bundle config set --local path 'vendor/bundle' &&\
+  bundle install --deployment --jobs 4 --without test development &&\
+       bundle exec rake maxminddb:get &&\
     find /var/www/discourse/vendor/bundle -name tmp -type d -exec rm -rf {} +
 
-
-# install supervisor
-RUN pip3 install supervisor
-COPY supervisor.conf /etc/supervisor/supervisord.conf
-COPY discourse.conf /etc/nginx/conf.d/discourse.conf
-COPY prepare_postgres /.prepare_postgres.sh
-COPY prepare_database.sh /.prepare_database.sh
-COPY start_discourse.sh /.start_discourse.sh
-RUN mkdir /etc/service/3bot_tmux
-COPY unicorn_run /etc/service/unicorn/run
-RUN chmod +x /.start_discourse.sh
-ENTRYPOINT ["/.start_discourse.sh"]
+USER root
+ # install supervisor
+ RUN pip3 install supervisor
+ RUN echo nocache5
+ COPY supervisor.conf /etc/supervisor/supervisord.conf
+ COPY discourse.conf /etc/nginx/conf.d/discourse.conf
+ COPY prepare_postgres /.prepare_postgres.sh
+ COPY prepare_database.sh /.prepare_database.sh
+ COPY start_discourse.sh /.start_discourse.sh
+ RUN mkdir /etc/service/3bot_tmux
+ COPY unicorn_run /etc/service/unicorn/run
+ RUN chmod +x /.start_discourse.sh
+ ENTRYPOINT ["/.start_discourse.sh"]
