@@ -14,7 +14,7 @@ RUN echo 2.0.`date +%Y%m%d` > /VERSION
 RUN apt update && apt install -y gnupg sudo curl
 RUN echo "debconf debconf/frontend select Teletype" | debconf-set-selections
 RUN apt update && apt -y install fping
-RUN sh -c "fping proxy && echo 'Acquire { Retries \"0\"; HTTP { Proxy \"http://proxy:3128\";}; };' > /etc/apt/apt.conf.d/40proxy && apt update || true"
+#RUN sh -c "fping proxy && echo 'Acquire { Retries \"0\"; HTTP { Proxy \"http://proxy:3128\";}; };' > /etc/apt/apt.conf.d/40proxy && apt update || true"
 RUN apt -y install software-properties-common
 RUN apt-mark hold initscripts
 RUN apt -y upgrade
